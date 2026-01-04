@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";               // ✅ use api.js
 import { auth } from "../config/firebase";
 
 function Projects() {
@@ -13,19 +13,31 @@ function Projects() {
   }, []);
 
   const loadProjects = async () => {
-    const res = await axios.get("http://localhost:5000/api/projects");
-    setProjects(res.data);
+    try {
+      const res = await api.get("/api/projects"); // ✅ no localhost
+      setProjects(res.data);
+    } catch (err) {
+      console.error("Error loading projects", err.message);
+    }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete project?")) return;
+    if (!user) return;
 
-    const token = await user.getIdToken();
-    await axios.delete(`http://localhost:5000/api/projects/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const token = await user.getIdToken();
 
-    loadProjects();
+      await api.delete(`/api/projects/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      loadProjects();
+    } catch (err) {
+      alert("Delete failed ❌");
+    }
   };
 
   return (
@@ -36,7 +48,11 @@ function Projects() {
         {projects.map((p) => (
           <div key={p._id} className="bg-white shadow rounded p-5">
             {p.image && (
-              <img src={p.image} className="h-48 w-full object-cover rounded mb-4" />
+              <img
+                src={p.image}
+                alt={p.title || "Project image"}   // ✅ alt added
+                className="h-48 w-full object-cover rounded mb-4"
+              />
             )}
 
             <h3 className="text-2xl font-semibold">{p.title}</h3>
@@ -44,7 +60,10 @@ function Projects() {
 
             <div className="flex flex-wrap gap-2 mt-3">
               {p.techStack.map((t, i) => (
-                <span key={i} className="bg-gray-100 px-3 py-1 rounded text-sm">
+                <span
+                  key={i}
+                  className="bg-gray-100 px-3 py-1 rounded text-sm"
+                >
                   {t}
                 </span>
               ))}
@@ -52,18 +71,28 @@ function Projects() {
 
             <div className="flex gap-4 mt-4">
               {p.liveLink && (
-                <a href={p.liveLink} target="_blank" className="text-blue-600">
+                <a
+                  href={p.liveLink}
+                  target="_blank"
+                  rel="noopener noreferrer"   // ✅ security fix
+                  className="text-blue-600"
+                >
                   Live
                 </a>
               )}
+
               {p.githubLink && (
-                <a href={p.githubLink} target="_blank" className="text-gray-700">
+                <a
+                  href={p.githubLink}
+                  target="_blank"
+                  rel="noopener noreferrer"   // ✅ security fix
+                  className="text-gray-700"
+                >
                   GitHub
                 </a>
               )}
             </div>
 
-            {/* 🔐 EDIT / DELETE */}
             {user && user.email === p.owner && (
               <div className="flex gap-4 mt-5">
                 <button
