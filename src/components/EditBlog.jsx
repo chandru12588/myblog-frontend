@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";              // ✅ use api.js
 import { auth } from "../config/firebase";
 
 export default function EditBlog() {
@@ -15,14 +15,18 @@ export default function EditBlog() {
 
   /* ================= LOAD BLOG ================= */
   useEffect(() => {
-    axios
-      .get(`http://localhost:5000/api/blogs/${id}`)
-      .then((res) => {
+    const loadBlog = async () => {
+      try {
+        const res = await api.get(`/api/blogs/${id}`); // ✅ no localhost
         setTitle(res.data.title);
         setContent(res.data.content);
         setPreview(res.data.image || "");
-      })
-      .catch(() => alert("Failed to load blog"));
+      } catch (err) {
+        alert("Failed to load blog ❌");
+      }
+    };
+
+    loadBlog();
   }, [id]);
 
   /* ================= IMAGE CHANGE ================= */
@@ -43,6 +47,7 @@ export default function EditBlog() {
 
     try {
       setLoading(true);
+
       const token = await auth.currentUser.getIdToken(true);
 
       const formData = new FormData();
@@ -50,8 +55,8 @@ export default function EditBlog() {
       formData.append("content", content);
       if (image) formData.append("image", image);
 
-      await axios.put(
-        `http://localhost:5000/api/blogs/${id}`,
+      await api.put(
+        `/api/blogs/${id}`,                  // ✅ no localhost
         formData,
         {
           headers: {
@@ -63,18 +68,16 @@ export default function EditBlog() {
 
       alert("Blog Updated Successfully ✅");
       navigate("/blogs");
-
     } catch (err) {
-      console.log(err.response?.data || err.message);
+      console.error(err.response?.data || err.message);
       alert("Update failed ❌");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
     <div className="max-w-2xl mx-auto p-6 md:p-10">
-
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
@@ -88,7 +91,6 @@ export default function EditBlog() {
       </h2>
 
       <form onSubmit={handleUpdate} className="flex flex-col gap-4">
-
         {/* Title */}
         <input
           value={title}
@@ -116,7 +118,7 @@ export default function EditBlog() {
         {preview && (
           <img
             src={preview}
-            alt="Preview"
+            alt="Blog preview"
             className="h-52 w-full object-cover rounded border mt-2"
           />
         )}

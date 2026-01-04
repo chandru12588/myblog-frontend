@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../utils/api";           // ✅ use api.js
 import { auth } from "../config/firebase";
 
 function AddProject() {
@@ -44,17 +44,26 @@ function AddProject() {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
-      formData.append("techStack", techStack); // comma separated
+      formData.append(
+        "techStack",
+        techStack
+          .split(",")
+          .map((t) => t.trim())
+      );
       formData.append("liveLink", liveLink);
       formData.append("githubLink", githubLink);
       if (image) formData.append("image", image);
 
-      await axios.post("http://localhost:5000/api/projects", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`, // ✅ REQUIRED
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await api.post(
+        "/api/projects",                  // ✅ no localhost
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       alert("Project added successfully 🚀");
 
@@ -67,7 +76,7 @@ function AddProject() {
       setImage(null);
       setPreview(null);
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
       alert("Error adding project ❌");
     } finally {
       setLoading(false);
@@ -81,7 +90,6 @@ function AddProject() {
       </h2>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
         <input
           type="text"
           placeholder="Project Title *"
@@ -131,7 +139,7 @@ function AddProject() {
         {preview && (
           <img
             src={preview}
-            alt="preview"
+            alt="Project preview"
             className="w-full h-52 object-cover rounded border mt-2"
           />
         )}

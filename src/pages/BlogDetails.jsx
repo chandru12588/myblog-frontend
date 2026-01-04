@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";   // ✅ use api.js
 
 export default function BlogDetails() {
   const { id } = useParams();
@@ -9,21 +9,24 @@ export default function BlogDetails() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:5000/api/blogs/${id}`)
-      .then((res) => {
+    const loadBlog = async () => {
+      try {
+        const res = await api.get(`/api/blogs/${id}`); // ✅ no localhost
         setBlog(res.data);
+      } catch (err) {
+        console.error("Error loading blog", err.message);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    };
+
+    loadBlog();
   }, [id]);
 
   /* Like Blog */
   const handleLike = async () => {
     try {
-      const res = await axios.patch(
-        `http://localhost:5000/api/blogs/like/${id}`
-      );
+      const res = await api.patch(`/api/blogs/like/${id}`); // ✅ no localhost
       setBlog(res.data);
     } catch (err) {
       console.log("Like failed");
@@ -34,11 +37,14 @@ export default function BlogDetails() {
     return <p className="text-center mt-16 text-lg">Loading blog...</p>;
 
   if (!blog)
-    return <p className="text-center mt-16 text-red-500">Blog not found ❌</p>;
+    return (
+      <p className="text-center mt-16 text-red-500">
+        Blog not found ❌
+      </p>
+    );
 
   return (
     <div className="max-w-3xl mx-auto p-6 md:p-10">
-
       {/* Back Button */}
       <button
         onClick={() => navigate("/blogs")}
@@ -51,7 +57,7 @@ export default function BlogDetails() {
       {blog.image && (
         <img
           src={blog.image}
-          alt={blog.title}
+          alt={blog.title || "Blog image"}
           className="rounded-xl w-full max-h-[400px] object-cover mb-6"
         />
       )}
