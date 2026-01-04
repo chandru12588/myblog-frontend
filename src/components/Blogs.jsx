@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";              // ✅ USE api.js
 import { auth } from "../config/firebase";
 
 function Blogs() {
@@ -9,7 +9,7 @@ function Blogs() {
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
 
-  /* ================= AUTH STATE (IMPORTANT FIX) ================= */
+  /* ================= AUTH STATE ================= */
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((u) => setUser(u));
     return () => unsub();
@@ -23,20 +23,20 @@ function Blogs() {
 
   const loadBlogs = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/blogs");
+      const res = await api.get("/api/blogs");   // ✅ NO localhost
       setBlogs(res.data);
     } catch (err) {
-      console.log("Error fetching blogs");
+      console.log("Error fetching blogs", err.message);
     }
   };
 
   /* ================= LIKE BLOG ================= */
   const handleLike = async (id) => {
     try {
-      await axios.patch(`http://localhost:5000/api/blogs/like/${id}`);
+      await api.patch(`/api/blogs/like/${id}`);  // ✅ NO localhost
       loadBlogs();
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
     }
   };
 
@@ -51,11 +51,13 @@ function Blogs() {
 
     try {
       const token = await user.getIdToken();
-      await axios.delete(`http://localhost:5000/api/blogs/${id}`, {
+
+      await api.delete(`/api/blogs/${id}`, {     // ✅ NO localhost
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
       loadBlogs();
     } catch (err) {
       alert("Delete failed ❌");
@@ -64,13 +66,10 @@ function Blogs() {
 
   return (
     <div className="py-14 text-center">
-
-      {/* ================= HEADING ================= */}
       <h2 className="text-5xl font-bold">
         Latest <span className="text-orange-500">Blogs ✍️</span>
       </h2>
 
-      {/* ================= ADD BLOG ================= */}
       {user && (
         <button
           onClick={() => navigate("/add-blog")}
@@ -80,20 +79,16 @@ function Blogs() {
         </button>
       )}
 
-      {/* ================= EMPTY STATE ================= */}
       {blogs.length === 0 && (
         <p className="mt-10 text-gray-500 text-lg">No Blogs Yet 👀</p>
       )}
 
-      {/* ================= BLOG LIST ================= */}
       <div className="grid md:grid-cols-2 gap-8 px-10 mt-12 mb-20">
         {blogs.map((blog) => (
           <div
             key={blog._id}
             className="bg-white shadow-lg p-6 rounded-xl text-left border hover:shadow-xl transition"
           >
-
-            {/* BLOG IMAGE */}
             {blog.image && (
               <img
                 src={blog.image}
@@ -102,22 +97,16 @@ function Blogs() {
               />
             )}
 
-            {/* TITLE */}
             <h3 className="text-2xl font-semibold text-gray-800">
               {blog.title}
             </h3>
 
-            {/* DATE */}
-            <p className="text-gray-400 text-sm my-1">
-              {blog.date}
-            </p>
+            <p className="text-gray-400 text-sm my-1">{blog.date}</p>
 
-            {/* CONTENT PREVIEW */}
             <p className="text-gray-600 mt-2 line-clamp-3">
               {blog.content}
             </p>
 
-            {/* ✅ READ MORE (FIXED ROUTE) */}
             <button
               onClick={() => navigate(`/blogs/${blog._id}`)}
               className="text-blue-600 mt-2 hover:underline block"
@@ -125,21 +114,18 @@ function Blogs() {
               Read More →
             </button>
 
-            {/* ACTIONS */}
             <div className="flex items-center gap-3 mt-4">
-
-              {/* LIKE */}
               <button
                 onClick={() => handleLike(blog._id)}
                 className="text-pink-600 font-semibold flex items-center gap-1"
               >
                 ❤️ Like
               </button>
+
               <span className="text-gray-700">
                 {blog.likes} Likes
               </span>
 
-              {/* EDIT & DELETE */}
               {user && (
                 <>
                   <button
@@ -158,7 +144,6 @@ function Blogs() {
                 </>
               )}
             </div>
-
           </div>
         ))}
       </div>
