@@ -18,7 +18,7 @@ function AddBlog() {
       const token = await auth.currentUser.getIdToken(true);
 
       const res = await axios.post(
-        "http://localhost:5000/api/blogs",
+        "https://myblog-backend-production-9881.up.railway.app",
         { title, content },
         { headers: { Authorization: `Bearer ${token}` } }
       );
