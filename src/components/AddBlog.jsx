@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../utils/api";          // ✅ USE api.js
 import { auth } from "../config/firebase";
 
 function AddBlog() {
@@ -10,17 +10,25 @@ function AddBlog() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!auth.currentUser) return alert("⚠ Please login first!");
+    if (!auth.currentUser) {
+      alert("⚠ Please login first!");
+      return;
+    }
 
     try {
       setLoading(true);
 
       const token = await auth.currentUser.getIdToken(true);
 
-      const res = await axios.post(
-        "https://myblog-backend-production-9881.up.railway.app",
+      // ✅ CORRECT API CALL
+      await api.post(
+        "/api/blogs",
         { title, content },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       alert("Blog Added Successfully 🚀");
@@ -28,22 +36,24 @@ function AddBlog() {
       setContent("");
 
     } catch (err) {
-      console.log(err.response?.data);
+      console.error("Add blog error:", err.response?.data || err.message);
       alert("Error adding blog ❌");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div className="max-w-xl mx-auto p-6">
-      <h2 className="text-3xl font-bold text-orange-500 mb-5">✍ Add New Blog</h2>
+      <h2 className="text-3xl font-bold text-orange-500 mb-5">
+        ✍ Add New Blog
+      </h2>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-        <input 
+        <input
           placeholder="Blog Title"
           value={title}
-          onChange={(e)=>setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
           className="border p-2 rounded"
           required
         />
@@ -52,19 +62,18 @@ function AddBlog() {
           placeholder="Blog Content"
           rows="6"
           value={content}
-          onChange={(e)=>setContent(e.target.value)}
+          onChange={(e) => setContent(e.target.value)}
           className="border p-2 rounded"
           required
         />
 
-        <button 
+        <button
           className="bg-orange-500 text-white p-2 rounded hover:bg-orange-600"
           type="submit"
           disabled={loading}
         >
-          {loading? "Publishing..." : "Publish Blog 🚀"}
+          {loading ? "Publishing..." : "Publish Blog 🚀"}
         </button>
-
       </form>
     </div>
   );
