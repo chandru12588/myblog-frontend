@@ -7,24 +7,15 @@ function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const NavLink = ({ to, label }) => (
-    <Link
-      to={to}
-      onClick={() => setMenuOpen(false)}
-      className="text-gray-700 hover:text-orange-500 transition font-medium"
-    >
-      {label}
-    </Link>
-  );
-
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
+      {/* ================= CONTAINER ================= */}
       <div className="max-w-7xl mx-auto px-5 py-4 flex justify-between items-center">
 
         {/* ================= LOGO ================= */}
         <h2
-          className="text-2xl font-extrabold text-orange-500 cursor-pointer"
           onClick={() => navigate("/home")}
+          className="text-2xl font-extrabold text-orange-500 cursor-pointer"
         >
           Personal
         </h2>
@@ -32,15 +23,20 @@ function Navbar() {
         {/* ================= DESKTOP MENU ================= */}
         <div className="hidden md:flex items-center gap-6">
 
-          <NavLink to="/home" label="Home" />
-          <NavLink to="/blogs" label="Blogs" />
-          <NavLink to="/projects" label="Projects" />
-          <NavLink to="/about" label="About" />
+          <Link to="/home" className="nav-item">Home</Link>
+          <Link to="/blogs" className="nav-item">Blogs</Link>
+          <Link to="/projects" className="nav-item">Projects</Link>
+          <Link to="/about" className="nav-item">About</Link>
 
           {!user && (
             <button
               onClick={() => navigate("/login")}
-              className="bg-orange-500 text-white px-5 py-2 rounded-lg hover:bg-orange-600 transition"
+              className="
+                px-5 py-2 rounded-lg
+                bg-gradient-to-r from-orange-500 to-orange-600
+                text-white font-semibold
+                shadow-md hover:shadow-lg transition
+              "
             >
               Login
             </button>
@@ -51,14 +47,14 @@ function Navbar() {
 
               <button
                 onClick={() => navigate("/add-project")}
-                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
+                className="px-3 py-1 rounded bg-green-500 text-white hover:bg-green-600 transition"
               >
                 + Project
               </button>
 
               <button
                 onClick={() => navigate("/add-blog")}
-                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 transition"
               >
                 + Blog
               </button>
@@ -77,7 +73,7 @@ function Navbar() {
 
               <button
                 onClick={logout}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                className="px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
               >
                 Logout
               </button>
@@ -87,25 +83,50 @@ function Navbar() {
 
         {/* ================= MOBILE TOGGLE ================= */}
         <button
-          className="md:hidden text-gray-700 focus:outline-none"
+          className="md:hidden text-2xl text-gray-700"
           onClick={() => setMenuOpen(!menuOpen)}
         >
-          {menuOpen ? (
-            <span className="text-2xl">✕</span>
-          ) : (
-            <span className="text-2xl">☰</span>
-          )}
+          {menuOpen ? "✕" : "☰"}
         </button>
       </div>
 
       {/* ================= MOBILE MENU ================= */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t px-6 py-5 space-y-4">
+        <div className="md:hidden bg-white border-t px-6 py-6 space-y-5">
 
-          <NavLink to="/home" label="Home" />
-          <NavLink to="/blogs" label="Blogs" />
-          <NavLink to="/projects" label="Projects" />
-          <NavLink to="/about" label="About" />
+          <Link
+            to="/home"
+            onClick={() => setMenuOpen(false)}
+            className="block text-lg font-medium text-gray-800 hover:text-orange-500"
+          >
+            Home
+          </Link>
+
+          <Link
+            to="/blogs"
+            onClick={() => setMenuOpen(false)}
+            className="block text-lg font-medium text-gray-800 hover:text-orange-500"
+          >
+            Blogs
+          </Link>
+
+          <Link
+            to="/projects"
+            onClick={() => setMenuOpen(false)}
+            className="block text-lg font-medium text-gray-800 hover:text-orange-500"
+          >
+            Projects
+          </Link>
+
+          <Link
+            to="/about"
+            onClick={() => setMenuOpen(false)}
+            className="block text-lg font-medium text-gray-800 hover:text-orange-500"
+          >
+            About
+          </Link>
+
+          <div className="border-t pt-4"></div>
 
           {!user && (
             <button
@@ -113,35 +134,24 @@ function Navbar() {
                 setMenuOpen(false);
                 navigate("/login");
               }}
-              className="w-full bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600 transition"
+              className="
+                w-full py-3 rounded-xl
+                bg-gradient-to-r from-orange-500 to-orange-600
+                text-white font-semibold text-lg
+                shadow-md hover:shadow-lg transition
+              "
             >
               Login
             </button>
           )}
 
           {user && (
-            <>
-              <button
-                onClick={() => navigate("/add-project")}
-                className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition"
-              >
-                + Add Project
-              </button>
-
-              <button
-                onClick={() => navigate("/add-blog")}
-                className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
-              >
-                + Add Blog
-              </button>
-
-              <button
-                onClick={logout}
-                className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
-              >
-                Logout
-              </button>
-            </>
+            <button
+              onClick={logout}
+              className="w-full py-3 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+            >
+              Logout
+            </button>
           )}
         </div>
       )}
