@@ -17,20 +17,20 @@ function ProjectDetails() {
     return () => unsub();
   }, []);
 
-  /* ================= LOAD PROJECT ================= */
+  /* ================= LOAD PROJECT (FIXED) ================= */
   useEffect(() => {
-    loadProject();
-  }, [id]);
+    const loadProject = async () => {
+      try {
+        const res = await api.get(`/api/projects/${id}`);
+        setProject(res.data);
+      } catch {
+        alert("Project not found ❌");
+        navigate("/projects");
+      }
+    };
 
-  const loadProject = async () => {
-    try {
-      const res = await api.get(`/api/projects/${id}`);
-      setProject(res.data);
-    } catch {
-      alert("Project not found ❌");
-      navigate("/projects");
-    }
-  };
+    loadProject();
+  }, [id, navigate]);
 
   if (!project) return null;
 
@@ -39,7 +39,10 @@ function ProjectDetails() {
 
   /* ================= LIKE / UNLIKE ================= */
   const handleLikeToggle = async () => {
-    if (!user) return alert("Login required ❌");
+    if (!user) {
+      alert("Login required ❌");
+      return;
+    }
 
     try {
       const token = await user.getIdToken();
@@ -48,9 +51,13 @@ function ProjectDetails() {
         ? `/api/projects/unlike/${project._id}`
         : `/api/projects/like/${project._id}`;
 
-      const res = await api.patch(endpoint, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.patch(
+        endpoint,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       setProject(res.data);
     } catch {
@@ -78,7 +85,7 @@ function ProjectDetails() {
     }
   };
 
-  /* ================= DELETE OWN COMMENT ================= */
+  /* ================= DELETE COMMENT ================= */
   const handleDeleteComment = async (index) => {
     if (!user) return;
 
@@ -98,7 +105,6 @@ function ProjectDetails() {
 
   return (
     <div className="px-6 md:px-12 py-12 max-w-5xl mx-auto">
-
       {/* BACK */}
       <button
         onClick={() => navigate("/projects")}
@@ -155,7 +161,10 @@ function ProjectDetails() {
       {/* TECH STACK */}
       <div className="flex flex-wrap gap-2 mt-4">
         {project.techStack.map((t, i) => (
-          <span key={i} className="px-3 py-1 bg-gray-100 rounded text-sm">
+          <span
+            key={i}
+            className="px-3 py-1 bg-gray-100 rounded text-sm"
+          >
             {t}
           </span>
         ))}
@@ -186,7 +195,7 @@ function ProjectDetails() {
         )}
       </div>
 
-      {/* LIKE BUTTON */}
+      {/* LIKE */}
       <button
         onClick={handleLikeToggle}
         className={`mt-8 px-6 py-2 rounded-lg font-semibold ${
@@ -221,7 +230,9 @@ function ProjectDetails() {
                     minute: "2-digit",
                   })}
                 </p>
-                <p className="text-sm text-gray-700 mt-1">{c.text}</p>
+                <p className="text-sm text-gray-700 mt-1">
+                  {c.text}
+                </p>
               </div>
 
               {user && c.uid === user.uid && (
