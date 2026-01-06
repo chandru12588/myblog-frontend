@@ -39,10 +39,7 @@ function ProjectDetails() {
 
   /* ================= LIKE / UNLIKE ================= */
   const handleLikeToggle = async () => {
-    if (!user) {
-      alert("Login required ❌");
-      return;
-    }
+    if (!user) return alert("Login required ❌");
 
     try {
       const token = await user.getIdToken();
@@ -51,30 +48,19 @@ function ProjectDetails() {
         ? `/api/projects/unlike/${project._id}`
         : `/api/projects/like/${project._id}`;
 
-      const res = await api.patch(
-        endpoint,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.patch(endpoint, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setProject(res.data);
-    } catch (err) {
-      alert(err.response?.data?.message || "Action failed ❌");
+    } catch {
+      alert("Action failed ❌");
     }
   };
 
   /* ================= ADD COMMENT ================= */
   const handleComment = async () => {
-    if (!user) {
-      alert("Login required ❌");
-      return;
-    }
-
-    if (!comment.trim()) return;
+    if (!user || !comment.trim()) return;
 
     try {
       const token = await user.getIdToken();
@@ -82,11 +68,7 @@ function ProjectDetails() {
       const res = await api.post(
         `/api/projects/comment/${project._id}`,
         { text: comment },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setProject(res.data);
@@ -105,11 +87,7 @@ function ProjectDetails() {
 
       const res = await api.delete(
         `/api/projects/comment/${project._id}/${index}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setProject(res.data);
@@ -143,8 +121,23 @@ function ProjectDetails() {
         {project.title}
       </h1>
 
-      <p className="text-gray-500 mt-1">
-        Created by {project.ownerEmail}
+      {/* META */}
+      <p className="text-gray-500 mt-2 text-sm">
+        🚀 Created by{" "}
+        <span className="font-medium text-gray-700">
+          {project.ownerEmail}
+        </span>
+        {" • "}
+        📅 {new Date(project.createdAt).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}
+        {" • "}
+        ⏰ {new Date(project.createdAt).toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
       </p>
 
       {/* STATS */}
@@ -221,7 +214,14 @@ function ProjectDetails() {
             >
               <div>
                 <p className="text-sm font-semibold">{c.email}</p>
-                <p className="text-sm text-gray-700">{c.text}</p>
+                <p className="text-xs text-gray-500">
+                  {new Date(c.date).toLocaleDateString("en-IN")} •{" "}
+                  {new Date(c.date).toLocaleTimeString("en-IN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+                <p className="text-sm text-gray-700 mt-1">{c.text}</p>
               </div>
 
               {user && c.uid === user.uid && (

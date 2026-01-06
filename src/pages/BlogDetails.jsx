@@ -103,7 +103,7 @@ export default function BlogDetails() {
 
       setBlog(res.data);
       setComment("");
-    } catch (err) {
+    } catch {
       alert("Comment failed ❌");
     }
   };
@@ -129,15 +129,42 @@ export default function BlogDetails() {
       )}
 
       {/* TITLE */}
-      <h1 className="text-4xl font-bold">{blog.title}</h1>
-      <p className="text-gray-500 mt-1">✍ {blog.authorEmail}</p>
+      <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">
+        {blog.title}
+      </h1>
+
+      {/* META (SAFE DATE RENDER) */}
+      <p className="text-gray-500 mt-2 text-sm flex flex-wrap gap-2 items-center">
+        ✍ Written by{" "}
+        <span className="font-medium text-gray-700">
+          {blog.authorEmail}
+        </span>
+
+        {blog.createdAt && (
+          <>
+            <span>•</span>
+            📅{" "}
+            {new Date(blog.createdAt).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+            <span>•</span>
+            ⏰{" "}
+            {new Date(blog.createdAt).toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </>
+        )}
+      </p>
 
       {/* CONTENT */}
-      <p className="mt-6 text-gray-700 whitespace-pre-line">
+      <p className="mt-6 text-lg leading-relaxed text-gray-700 whitespace-pre-line">
         {blog.content}
       </p>
 
-      {/* LIKE */}
+      {/* LIKE / UNLIKE */}
       <div className="flex items-center gap-4 mt-8">
         <button
           onClick={handleLikeToggle}
@@ -150,24 +177,32 @@ export default function BlogDetails() {
           ❤️ {likedByUser ? "Unlike" : "Like"}
         </button>
 
-        <span className="font-semibold">
+        <span className="font-semibold text-gray-700">
           {blog.likes} Likes
         </span>
       </div>
 
       {/* COMMENTS */}
       <div className="mt-10">
-        <h3 className="text-xl font-semibold mb-3">💬 Comments</h3>
+        <h3 className="text-xl font-semibold mb-3">
+          💬 Comments
+        </h3>
 
         {blog.comments.length === 0 && (
-          <p className="text-gray-500 text-sm">No comments yet</p>
+          <p className="text-gray-500 text-sm">
+            No comments yet
+          </p>
         )}
 
         <div className="space-y-3">
-          {blog.comments.map((c, i) => (
-            <div key={i} className="bg-gray-100 p-3 rounded">
-              <p className="text-sm font-semibold">{c.email}</p>
-              <p className="text-sm text-gray-700">{c.text}</p>
+          {blog.comments.map((c) => (
+            <div key={c._id} className="bg-gray-100 p-3 rounded">
+              <p className="text-sm font-semibold">
+                {c.email}
+              </p>
+              <p className="text-gray-700 text-sm">
+                {c.text}
+              </p>
             </div>
           ))}
         </div>
@@ -183,7 +218,7 @@ export default function BlogDetails() {
             />
             <button
               onClick={handleComment}
-              className="bg-orange-500 text-white px-4 rounded"
+              className="bg-orange-500 text-white px-4 rounded hover:bg-orange-600"
             >
               Post
             </button>

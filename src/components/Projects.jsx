@@ -39,7 +39,10 @@ function Projects() {
       (u) => u.uid === user.uid
     );
 
-    if (alreadyLiked) return;
+    if (alreadyLiked) {
+      alert("You already liked this ❤️");
+      return;
+    }
 
     try {
       const token = await user.getIdToken();
@@ -92,17 +95,21 @@ function Projects() {
           return (
             <div
               key={p._id}
-              className="bg-white shadow rounded p-5 hover:shadow-lg transition"
+              className="bg-white shadow rounded p-5"
             >
+              {/* IMAGE */}
               {p.image && (
                 <img
                   src={p.image}
                   alt={p.title}
-                  className="h-48 w-full object-cover rounded mb-4"
+                  className="h-48 w-full object-cover rounded mb-4 cursor-pointer"
+                  onClick={() => navigate(`/projects/${p._id}`)} // ✅ FIX
                 />
               )}
 
-              <h3 className="text-2xl font-semibold">{p.title}</h3>
+              <h3 className="text-2xl font-semibold">
+                {p.title}
+              </h3>
 
               <p className="text-sm text-gray-400">
                 {p.ownerEmail}
@@ -111,6 +118,14 @@ function Projects() {
               <p className="text-gray-600 mt-2 line-clamp-3">
                 {p.description}
               </p>
+
+              {/* VIEW DETAILS */}
+              <button
+                onClick={() => navigate(`/projects/${p._id}`)} // ✅ FIX
+                className="text-blue-600 mt-2 hover:underline"
+              >
+                View Details →
+              </button>
 
               {/* TECH STACK */}
               <div className="flex flex-wrap gap-2 mt-3">
@@ -149,11 +164,9 @@ function Projects() {
                 )}
               </div>
 
-              {/* STATS */}
-              <div className="flex items-center gap-5 mt-4 text-sm">
-                <span className="text-gray-600">
-                  👀 {p.views || 0}
-                </span>
+              {/* 👀 ❤️ 💬 */}
+              <div className="flex items-center gap-4 mt-4 text-sm">
+                <span>👀 {p.views || 0}</span>
 
                 <button
                   disabled={likedByUser}
@@ -161,30 +174,22 @@ function Projects() {
                   className={`font-semibold ${
                     likedByUser
                       ? "text-gray-400 cursor-not-allowed"
-                      : "text-pink-600 hover:underline"
+                      : "text-pink-600"
                   }`}
                 >
                   ❤️ {p.likes || 0}
                 </button>
 
-                <span className="text-gray-600">
-                  💬 {p.comments?.length || 0}
-                </span>
+                <span>💬 {p.comments?.length || 0}</span>
               </div>
 
-              {/* 🔥 VIEW DETAILS CTA */}
-              <button
-                onClick={() => navigate(`/projects/${p._id}`)}
-                className="mt-4 text-blue-600 text-sm hover:underline"
-              >
-                💬 View details & comment →
-              </button>
-
-              {/* 🔐 OWNER ONLY */}
+              {/* OWNER ACTIONS */}
               {user && p.ownerId === user.uid && (
                 <div className="flex gap-4 mt-4">
                   <button
-                    onClick={() => navigate(`/edit-project/${p._id}`)}
+                    onClick={() =>
+                      navigate(`/edit-project/${p._id}`)
+                    }
                     className="text-green-600"
                   >
                     ✏ Edit
