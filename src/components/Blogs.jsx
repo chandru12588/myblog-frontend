@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../utils/api";              // ✅ USE api.js
+import api from "../utils/api";
 import { auth } from "../config/firebase";
 
 function Blogs() {
@@ -23,7 +23,7 @@ function Blogs() {
 
   const loadBlogs = async () => {
     try {
-      const res = await api.get("/api/blogs");   // ✅ NO localhost
+      const res = await api.get("/api/blogs");
       setBlogs(res.data);
     } catch (err) {
       console.log("Error fetching blogs", err.message);
@@ -33,7 +33,7 @@ function Blogs() {
   /* ================= LIKE BLOG ================= */
   const handleLike = async (id) => {
     try {
-      await api.patch(`/api/blogs/like/${id}`);  // ✅ NO localhost
+      await api.patch(`/api/blogs/like/${id}`);
       loadBlogs();
     } catch (err) {
       console.log(err.message);
@@ -52,7 +52,7 @@ function Blogs() {
     try {
       const token = await user.getIdToken();
 
-      await api.delete(`/api/blogs/${id}`, {     // ✅ NO localhost
+      await api.delete(`/api/blogs/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -101,7 +101,9 @@ function Blogs() {
               {blog.title}
             </h3>
 
-            <p className="text-gray-400 text-sm my-1">{blog.date}</p>
+            <p className="text-gray-400 text-sm my-1">
+              {blog.authorEmail}
+            </p>
 
             <p className="text-gray-600 mt-2 line-clamp-3">
               {blog.content}
@@ -126,7 +128,8 @@ function Blogs() {
                 {blog.likes} Likes
               </span>
 
-              {user && (
+              {/* 🔐 OWNER-ONLY ACTIONS */}
+              {user && blog.authorId === user.uid && (
                 <>
                   <button
                     onClick={() => navigate(`/edit-blog/${blog._id}`)}
