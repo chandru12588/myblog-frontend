@@ -8,9 +8,10 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
-      {/* ================= CONTAINER ================= */}
-      <div className="max-w-7xl mx-auto px-5 py-4 flex justify-between items-center">
+    <nav className="bg-white shadow-sm sticky top-0 z-50 w-full">
+      
+      {/* ================= FULL WIDTH BAR ================= */}
+      <div className="w-full px-6 md:px-10 py-4 flex justify-between items-center">
 
         {/* ================= LOGO ================= */}
         <h2
@@ -23,11 +24,23 @@ function Navbar() {
         {/* ================= DESKTOP MENU ================= */}
         <div className="hidden md:flex items-center gap-6">
 
-          <Link to="/home" className="nav-item">Home</Link>
-          <Link to="/blogs" className="nav-item">Blogs</Link>
-          <Link to="/projects" className="nav-item">Projects</Link>
-          <Link to="/about" className="nav-item">About</Link>
+          <Link to="/home" className="text-gray-700 font-medium hover:text-orange-500 transition">
+            Home
+          </Link>
 
+          <Link to="/blogs" className="text-gray-700 font-medium hover:text-orange-500 transition">
+            Blogs
+          </Link>
+
+          <Link to="/projects" className="text-gray-700 font-medium hover:text-orange-500 transition">
+            Projects
+          </Link>
+
+          <Link to="/about" className="text-gray-700 font-medium hover:text-orange-500 transition">
+            About
+          </Link>
+
+          {/* ================= NOT LOGGED IN ================= */}
           {!user && (
             <button
               onClick={() => navigate("/login")}
@@ -42,6 +55,7 @@ function Navbar() {
             </button>
           )}
 
+          {/* ================= LOGGED IN ================= */}
           {user && (
             <div className="flex items-center gap-4">
 
