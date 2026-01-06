@@ -34,19 +34,17 @@ export default function BlogDetails() {
     loadBlog();
   }, [id]);
 
-  if (loading)
-    return (
-      <p className="text-center mt-16 text-lg">
-        Loading blog...
-      </p>
-    );
+  if (loading) {
+    return <p className="text-center mt-16">Loading blog...</p>;
+  }
 
-  if (!blog)
+  if (!blog) {
     return (
       <p className="text-center mt-16 text-red-500">
         Blog not found ❌
       </p>
     );
+  }
 
   const likedByUser =
     user && blog.likedBy?.some((u) => u.uid === user.uid);
@@ -105,7 +103,7 @@ export default function BlogDetails() {
 
       setBlog(res.data);
       setComment("");
-    } catch {
+    } catch (err) {
       alert("Comment failed ❌");
     }
   };
@@ -113,7 +111,7 @@ export default function BlogDetails() {
   return (
     <div className="max-w-3xl mx-auto p-6 md:p-10">
 
-      {/* ================= BACK ================= */}
+      {/* BACK */}
       <button
         onClick={() => navigate("/blogs")}
         className="text-blue-600 mb-4 hover:underline"
@@ -121,7 +119,7 @@ export default function BlogDetails() {
         ← Back to Blogs
       </button>
 
-      {/* ================= IMAGE ================= */}
+      {/* IMAGE */}
       {blog.image && (
         <img
           src={blog.image}
@@ -130,22 +128,16 @@ export default function BlogDetails() {
         />
       )}
 
-      {/* ================= TITLE ================= */}
-      <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">
-        {blog.title}
-      </h1>
+      {/* TITLE */}
+      <h1 className="text-4xl font-bold">{blog.title}</h1>
+      <p className="text-gray-500 mt-1">✍ {blog.authorEmail}</p>
 
-      {/* ================= META ================= */}
-      <p className="text-gray-500 mt-2">
-        ✍ {blog.authorEmail}
-      </p>
-
-      {/* ================= CONTENT ================= */}
-      <p className="mt-6 text-lg leading-relaxed text-gray-700 whitespace-pre-line">
+      {/* CONTENT */}
+      <p className="mt-6 text-gray-700 whitespace-pre-line">
         {blog.content}
       </p>
 
-      {/* ================= LIKE / UNLIKE ================= */}
+      {/* LIKE */}
       <div className="flex items-center gap-4 mt-8">
         <button
           onClick={handleLikeToggle}
@@ -158,40 +150,29 @@ export default function BlogDetails() {
           ❤️ {likedByUser ? "Unlike" : "Like"}
         </button>
 
-        <span className="font-semibold text-gray-700">
+        <span className="font-semibold">
           {blog.likes} Likes
         </span>
       </div>
 
-      {/* ================= COMMENTS ================= */}
+      {/* COMMENTS */}
       <div className="mt-10">
-        <h3 className="text-xl font-semibold mb-3">
-          💬 Comments
-        </h3>
+        <h3 className="text-xl font-semibold mb-3">💬 Comments</h3>
 
         {blog.comments.length === 0 && (
-          <p className="text-gray-500 text-sm">
-            No comments yet
-          </p>
+          <p className="text-gray-500 text-sm">No comments yet</p>
         )}
 
         <div className="space-y-3">
-          {blog.comments.map((c) => (
-            <div
-              key={c._id}
-              className="bg-gray-100 p-3 rounded"
-            >
-              <p className="text-sm font-semibold">
-                {c.email}
-              </p>
-              <p className="text-gray-700 text-sm">
-                {c.text}
-              </p>
+          {blog.comments.map((c, i) => (
+            <div key={i} className="bg-gray-100 p-3 rounded">
+              <p className="text-sm font-semibold">{c.email}</p>
+              <p className="text-sm text-gray-700">{c.text}</p>
             </div>
           ))}
         </div>
 
-        {/* ================= ADD COMMENT ================= */}
+        {/* ADD COMMENT */}
         {user && (
           <div className="mt-4 flex gap-3">
             <input
@@ -200,10 +181,9 @@ export default function BlogDetails() {
               placeholder="Write a comment..."
               className="flex-1 border rounded px-3 py-2"
             />
-
             <button
               onClick={handleComment}
-              className="bg-orange-500 text-white px-4 rounded hover:bg-orange-600"
+              className="bg-orange-500 text-white px-4 rounded"
             >
               Post
             </button>
