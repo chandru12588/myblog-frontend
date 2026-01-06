@@ -16,6 +16,7 @@ import Login from "./components/Login.jsx";
 import Signup from "./components/Signup.jsx";
 import About from "./components/About.jsx";
 import Projects from "./components/Projects.jsx";
+import ProjectDetails from "./pages/ProjectDetails.jsx"; // ✅ ADD THIS
 
 /* ================= BLOG ACTIONS ================= */
 import AddBlog from "./components/AddBlog.jsx";
@@ -23,7 +24,7 @@ import EditBlog from "./components/EditBlog.jsx";
 
 /* ================= PROJECT ACTIONS ================= */
 import AddProject from "./components/AddProject.jsx";
-import EditProject from "./components/EditProject.jsx"; // ✅ FIXED
+import EditProject from "./components/EditProject.jsx";
 
 /* ================= LAYOUT ================= */
 import Navbar from "./components/common/Navbar.jsx";
@@ -48,9 +49,16 @@ function Layout() {
         {/* ========== PUBLIC ROUTES ========== */}
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
+
+        {/* BLOGS */}
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:id" element={<BlogDetails />} />
+
+        {/* PROJECTS */}
         <Route path="/projects" element={<Projects />} />
+        <Route path="/projects/:id" element={<ProjectDetails />} /> {/* ✅ FIX */}
+
+        {/* OTHERS */}
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
