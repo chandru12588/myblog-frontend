@@ -39,10 +39,7 @@ function Projects() {
       (u) => u.uid === user.uid
     );
 
-    if (alreadyLiked) {
-      alert("You already liked this ❤️");
-      return;
-    }
+    if (alreadyLiked) return;
 
     try {
       const token = await user.getIdToken();
@@ -93,7 +90,10 @@ function Projects() {
             user && p.likedBy?.some((u) => u.uid === user.uid);
 
           return (
-            <div key={p._id} className="bg-white shadow rounded p-5">
+            <div
+              key={p._id}
+              className="bg-white shadow rounded p-5 hover:shadow-lg transition"
+            >
               {p.image && (
                 <img
                   src={p.image}
@@ -108,10 +108,11 @@ function Projects() {
                 {p.ownerEmail}
               </p>
 
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 mt-2 line-clamp-3">
                 {p.description}
               </p>
 
+              {/* TECH STACK */}
               <div className="flex flex-wrap gap-2 mt-3">
                 {p.techStack.map((t, i) => (
                   <span
@@ -123,6 +124,7 @@ function Projects() {
                 ))}
               </div>
 
+              {/* LINKS */}
               <div className="flex gap-4 mt-4">
                 {p.liveLink && (
                   <a
@@ -147,8 +149,8 @@ function Projects() {
                 )}
               </div>
 
-              {/* 👀 ❤️ 💬 ACTIONS */}
-              <div className="flex items-center gap-4 mt-4 text-sm">
+              {/* STATS */}
+              <div className="flex items-center gap-5 mt-4 text-sm">
                 <span className="text-gray-600">
                   👀 {p.views || 0}
                 </span>
@@ -159,7 +161,7 @@ function Projects() {
                   className={`font-semibold ${
                     likedByUser
                       ? "text-gray-400 cursor-not-allowed"
-                      : "text-pink-600"
+                      : "text-pink-600 hover:underline"
                   }`}
                 >
                   ❤️ {p.likes || 0}
@@ -169,6 +171,14 @@ function Projects() {
                   💬 {p.comments?.length || 0}
                 </span>
               </div>
+
+              {/* 🔥 VIEW DETAILS CTA */}
+              <button
+                onClick={() => navigate(`/projects/${p._id}`)}
+                className="mt-4 text-blue-600 text-sm hover:underline"
+              >
+                💬 View details & comment →
+              </button>
 
               {/* 🔐 OWNER ONLY */}
               {user && p.ownerId === user.uid && (
