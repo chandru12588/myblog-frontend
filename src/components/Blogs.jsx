@@ -30,13 +30,39 @@ function Blogs() {
     }
   };
 
-  /* ================= LIKE BLOG ================= */
-  const handleLike = async (id) => {
+  /* ================= LIKE BLOG (SECURE) ================= */
+  const handleLike = async (blog) => {
+    if (!user) {
+      alert("Login required ❌");
+      return;
+    }
+
+    // UI-level double-like prevention
+    const alreadyLiked = blog.likedBy?.some(
+      (u) => u.uid === user.uid
+    );
+
+    if (alreadyLiked) {
+      alert("You already liked this ❤️");
+      return;
+    }
+
     try {
-      await api.patch(`/api/blogs/like/${id}`);
+      const token = await user.getIdToken();
+
+      await api.patch(
+        `/api/blogs/like/${blog._id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       loadBlogs();
     } catch (err) {
-      console.log(err.message);
+      alert(err.response?.data?.message || "Like failed ❌");
     }
   };
 
@@ -84,71 +110,93 @@ function Blogs() {
       )}
 
       <div className="grid md:grid-cols-2 gap-8 px-10 mt-12 mb-20">
-        {blogs.map((blog) => (
-          <div
-            key={blog._id}
-            className="bg-white shadow-lg p-6 rounded-xl text-left border hover:shadow-xl transition"
-          >
-            {blog.image && (
-              <img
-                src={blog.image}
-                alt={blog.title}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
-            )}
+        {blogs.map((blog) => {
+          const likedByUser =
+            user && blog.likedBy?.some((u) => u.uid === user.uid);
 
-            <h3 className="text-2xl font-semibold text-gray-800">
-              {blog.title}
-            </h3>
-
-            <p className="text-gray-400 text-sm my-1">
-              {blog.authorEmail}
-            </p>
-
-            <p className="text-gray-600 mt-2 line-clamp-3">
-              {blog.content}
-            </p>
-
-            <button
-              onClick={() => navigate(`/blogs/${blog._id}`)}
-              className="text-blue-600 mt-2 hover:underline block"
+          return (
+            <div
+              key={blog._id}
+              className="bg-white shadow-lg p-6 rounded-xl text-left border hover:shadow-xl transition"
             >
-              Read More →
-            </button>
+              {blog.image && (
+                <img
+                  src={blog.image}
+                  alt={blog.title}
+                  className="w-full h-48 object-cover rounded-lg mb-4"
+                />
+              )}
 
-            <div className="flex items-center gap-3 mt-4">
+              <h3 className="text-2xl font-semibold text-gray-800">
+                {blog.title}
+              </h3>
+
+              <p className="text-gray-400 text-sm my-1">
+                {blog.authorEmail}
+              </p>
+
+              <p className="text-gray-600 mt-2 line-clamp-3">
+                {blog.content}
+              </p>
+
               <button
-                onClick={() => handleLike(blog._id)}
-                className="text-pink-600 font-semibold flex items-center gap-1"
+                onClick={() => navigate(`/blogs/${blog._id}`)}
+                className="text-blue-600 mt-2 hover:underline block"
               >
-                ❤️ Like
+                Read More →
               </button>
 
-              <span className="text-gray-700">
-                {blog.likes} Likes
-              </span>
+              <div className="flex items-center gap-3 mt-4">
+                <button
+                  onClick={() => handleLike(blog)}
+                  disabled={likedByUser}
+                  className={`font-semibold flex items-center gap-1 ${
+                    likedByUser
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-pink-600"
+                  }`}
+                >
+                  ❤️ {likedByUser ? "Liked" : "Like"}
+                </button>
 
-              {/* 🔐 OWNER-ONLY ACTIONS */}
-              {user && blog.authorId === user.uid && (
-                <>
-                  <button
-                    onClick={() => navigate(`/edit-blog/${blog._id}`)}
-                    className="ml-auto text-green-600 hover:underline"
-                  >
-                    ✏ Edit
-                  </button>
+                <span className="text-gray-700">
+                  {blog.likes} Likes
+                </span>
 
-                  <button
-                    onClick={() => handleDelete(blog._id)}
-                    className="text-red-600 hover:underline"
-                  >
-                    🗑 Delete
-                  </button>
-                </>
+                {/* 🔐 OWNER-ONLY ACTIONS */}
+                {user && blog.authorId === user.uid && (
+                  <>
+                    <button
+                      onClick={() => navigate(`/edit-blog/${blog._id}`)}
+                      className="ml-auto text-green-600 hover:underline"
+                    >
+                      ✏ Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(blog._id)}
+                      className="text-red-600 hover:underline"
+                    >
+                      🗑 Delete
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* 👀 WHO LIKED (OPTIONAL PREVIEW) */}
+              {blog.likedBy?.length > 0 && (
+                <p className="text-xs text-gray-500 mt-2">
+                  Liked by{" "}
+                  {blog.likedBy
+                    .slice(0, 3)
+                    .map((u) => u.email.split("@")[0])
+                    .join(", ")}
+                  {blog.likedBy.length > 3 && " & others"}
+                </p>
               )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
