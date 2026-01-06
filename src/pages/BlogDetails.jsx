@@ -1,17 +1,28 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../utils/api";   // ✅ use api.js
+import api from "../utils/api";
+import { auth } from "../config/firebase";
 
 export default function BlogDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [comment, setComment] = useState("");
 
+  /* ================= AUTH ================= */
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged((u) => setUser(u));
+    return () => unsub();
+  }, []);
+
+  /* ================= LOAD BLOG ================= */
   useEffect(() => {
     const loadBlog = async () => {
       try {
-        const res = await api.get(`/api/blogs/${id}`); // ✅ no localhost
+        const res = await api.get(`/api/blogs/${id}`);
         setBlog(res.data);
       } catch (err) {
         console.error("Error loading blog", err.message);
@@ -23,18 +34,12 @@ export default function BlogDetails() {
     loadBlog();
   }, [id]);
 
-  /* Like Blog */
-  const handleLike = async () => {
-    try {
-      const res = await api.patch(`/api/blogs/like/${id}`); // ✅ no localhost
-      setBlog(res.data);
-    } catch (err) {
-      console.log("Like failed");
-    }
-  };
-
   if (loading)
-    return <p className="text-center mt-16 text-lg">Loading blog...</p>;
+    return (
+      <p className="text-center mt-16 text-lg">
+        Loading blog...
+      </p>
+    );
 
   if (!blog)
     return (
@@ -43,9 +48,72 @@ export default function BlogDetails() {
       </p>
     );
 
+  const likedByUser =
+    user && blog.likedBy?.some((u) => u.uid === user.uid);
+
+  /* ================= LIKE / UNLIKE ================= */
+  const handleLikeToggle = async () => {
+    if (!user) {
+      alert("Login required ❌");
+      return;
+    }
+
+    try {
+      const token = await user.getIdToken();
+
+      const endpoint = likedByUser
+        ? `/api/blogs/unlike/${blog._id}`
+        : `/api/blogs/like/${blog._id}`;
+
+      const res = await api.patch(
+        endpoint,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setBlog(res.data);
+    } catch (err) {
+      alert(err.response?.data?.message || "Action failed ❌");
+    }
+  };
+
+  /* ================= ADD COMMENT ================= */
+  const handleComment = async () => {
+    if (!user) {
+      alert("Login required ❌");
+      return;
+    }
+
+    if (!comment.trim()) return;
+
+    try {
+      const token = await user.getIdToken();
+
+      const res = await api.post(
+        `/api/blogs/comment/${blog._id}`,
+        { text: comment },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setBlog(res.data);
+      setComment("");
+    } catch {
+      alert("Comment failed ❌");
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto p-6 md:p-10">
-      {/* Back Button */}
+
+      {/* ================= BACK ================= */}
       <button
         onClick={() => navigate("/blogs")}
         className="text-blue-600 mb-4 hover:underline"
@@ -53,41 +121,94 @@ export default function BlogDetails() {
         ← Back to Blogs
       </button>
 
-      {/* Blog Image */}
+      {/* ================= IMAGE ================= */}
       {blog.image && (
         <img
           src={blog.image}
-          alt={blog.title || "Blog image"}
+          alt={blog.title}
           className="rounded-xl w-full max-h-[400px] object-cover mb-6"
         />
       )}
 
-      {/* Blog Title */}
+      {/* ================= TITLE ================= */}
       <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">
         {blog.title}
       </h1>
 
-      {/* Meta Info */}
+      {/* ================= META ================= */}
       <p className="text-gray-500 mt-2">
-        📅 {blog.date} &nbsp; • &nbsp; ✍ {blog.author || "Admin"}
+        ✍ {blog.authorEmail}
       </p>
 
-      {/* Content */}
+      {/* ================= CONTENT ================= */}
       <p className="mt-6 text-lg leading-relaxed text-gray-700 whitespace-pre-line">
         {blog.content}
       </p>
 
-      {/* Actions */}
+      {/* ================= LIKE / UNLIKE ================= */}
       <div className="flex items-center gap-4 mt-8">
         <button
-          onClick={handleLike}
-          className="bg-pink-100 text-pink-600 px-4 py-2 rounded hover:bg-pink-200"
+          onClick={handleLikeToggle}
+          className={`px-4 py-2 rounded font-semibold ${
+            likedByUser
+              ? "bg-gray-300 text-gray-700"
+              : "bg-pink-100 text-pink-600 hover:bg-pink-200"
+          }`}
         >
-          ❤️ Like
+          ❤️ {likedByUser ? "Unlike" : "Like"}
         </button>
+
         <span className="font-semibold text-gray-700">
           {blog.likes} Likes
         </span>
+      </div>
+
+      {/* ================= COMMENTS ================= */}
+      <div className="mt-10">
+        <h3 className="text-xl font-semibold mb-3">
+          💬 Comments
+        </h3>
+
+        {blog.comments.length === 0 && (
+          <p className="text-gray-500 text-sm">
+            No comments yet
+          </p>
+        )}
+
+        <div className="space-y-3">
+          {blog.comments.map((c) => (
+            <div
+              key={c._id}
+              className="bg-gray-100 p-3 rounded"
+            >
+              <p className="text-sm font-semibold">
+                {c.email}
+              </p>
+              <p className="text-gray-700 text-sm">
+                {c.text}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* ================= ADD COMMENT ================= */}
+        {user && (
+          <div className="mt-4 flex gap-3">
+            <input
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Write a comment..."
+              className="flex-1 border rounded px-3 py-2"
+            />
+
+            <button
+              onClick={handleComment}
+              className="bg-orange-500 text-white px-4 rounded hover:bg-orange-600"
+            >
+              Post
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -30,28 +30,26 @@ function Blogs() {
     }
   };
 
-  /* ================= LIKE BLOG (SECURE) ================= */
-  const handleLike = async (blog) => {
+  /* ================= LIKE / UNLIKE BLOG ================= */
+  const handleLikeToggle = async (blog) => {
     if (!user) {
       alert("Login required ❌");
       return;
     }
 
-    // UI-level double-like prevention
-    const alreadyLiked = blog.likedBy?.some(
+    const likedByUser = blog.likedBy?.some(
       (u) => u.uid === user.uid
     );
-
-    if (alreadyLiked) {
-      alert("You already liked this ❤️");
-      return;
-    }
 
     try {
       const token = await user.getIdToken();
 
+      const endpoint = likedByUser
+        ? `/api/blogs/unlike/${blog._id}`
+        : `/api/blogs/like/${blog._id}`;
+
       await api.patch(
-        `/api/blogs/like/${blog._id}`,
+        endpoint,
         {},
         {
           headers: {
@@ -62,7 +60,7 @@ function Blogs() {
 
       loadBlogs();
     } catch (err) {
-      alert(err.response?.data?.message || "Like failed ❌");
+      alert(err.response?.data?.message || "Action failed ❌");
     }
   };
 
@@ -148,15 +146,14 @@ function Blogs() {
 
               <div className="flex items-center gap-3 mt-4">
                 <button
-                  onClick={() => handleLike(blog)}
-                  disabled={likedByUser}
+                  onClick={() => handleLikeToggle(blog)}
                   className={`font-semibold flex items-center gap-1 ${
                     likedByUser
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-pink-600"
+                      ? "text-gray-400"
+                      : "text-pink-600 hover:underline"
                   }`}
                 >
-                  ❤️ {likedByUser ? "Liked" : "Like"}
+                  ❤️ {likedByUser ? "Unlike" : "Like"}
                 </button>
 
                 <span className="text-gray-700">
@@ -183,7 +180,7 @@ function Blogs() {
                 )}
               </div>
 
-              {/* 👀 WHO LIKED (OPTIONAL PREVIEW) */}
+              {/* 👀 WHO LIKED */}
               {blog.likedBy?.length > 0 && (
                 <p className="text-xs text-gray-500 mt-2">
                   Liked by{" "}
