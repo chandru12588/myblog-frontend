@@ -17,7 +17,7 @@ function About() {
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-14">
           <p className="text-xl text-gray-700 leading-relaxed">
             Hi 👋 I’m{" "}
-            <span className="font-bold text-orange-500">Chandru</span> — a{" "}
+            <span className="font-bold text-orange-500">Chandru</span> {" "}
             <strong>Travel Vlogger</strong>,{" "}
             <strong>Full-Stack Developer</strong>, and{" "}
             <strong>Freelancer</strong>.
@@ -25,7 +25,7 @@ function About() {
 
           <p className="mt-4 text-gray-600 leading-relaxed">
             I build real-world digital products and document journeys on two wheels.
-            From BPO floors to building full-stack platforms — this is my story.
+            From BPO floors to building full-stack platforms this is my story.
           </p>
         </div>
 
