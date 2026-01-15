@@ -33,8 +33,10 @@ function Home() {
     const loadCV = async () => {
       try {
         const res = await api.get("/api/cv");
-        setCv(res.data); // null OR { viewUrl, downloadUrl }
-      } catch {
+        // res.data will be { viewUrl, downloadUrl } or null
+        setCv(res.data); 
+      } catch (err) {
+        console.error("Error loading CV:", err);
         setCv(null);
       } finally {
         setLoadingCV(false);
@@ -49,6 +51,12 @@ function Home() {
     const file = e.target.files[0];
     if (!file || !user) return;
 
+    // Optional: Basic frontend validation
+    if (file.type !== "application/pdf") {
+      alert("Please upload a PDF file only.");
+      return;
+    }
+
     try {
       const token = await user.getIdToken();
       const formData = new FormData();
@@ -57,16 +65,16 @@ function Home() {
       const res = await api.post("/api/cv/upload", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      setCv({
-        viewUrl: res.data.viewUrl,
-        downloadUrl: res.data.downloadUrl,
-      });
+      // Update state with the new URLs from the fixed backend
+      setCv(res.data); 
 
       alert("CV uploaded successfully ✅");
-    } catch {
+    } catch (err) {
+      console.error("Upload failed:", err);
       alert("CV upload failed ❌");
     }
   };
@@ -87,7 +95,8 @@ function Home() {
 
       setCv(null);
       alert("CV deleted successfully ❌");
-    } catch {
+    } catch (err) {
+      console.error("Delete failed:", err);
       alert("Delete failed ❌");
     }
   };
@@ -120,6 +129,9 @@ function Home() {
             {/* CV VIEW / DOWNLOAD */}
             {!loadingCV && cv && (
               <>
+                {/* VIEW LINK: rel="noopener noreferrer" is important for 
+                   security when opening external Cloudinary links.
+                */}
                 <a
                   href={cv.viewUrl}
                   target="_blank"
@@ -129,8 +141,12 @@ function Home() {
                   View CV 👀
                 </a>
 
+                {/* DOWNLOAD LINK: The backend 'fl_attachment' flag does the work,
+                   but the 'download' attribute is a good browser hint.
+                */}
                 <a
                   href={cv.downloadUrl}
+                  download="Chandru_CV.pdf"
                   className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-md shadow-md"
                 >
                   Download CV ⬇
@@ -141,7 +157,6 @@ function Home() {
             {/* ================= ADMIN ONLY ================= */}
             {isAdmin && (
               <>
-                {/* UPLOAD */}
                 <label className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md shadow-md cursor-pointer">
                   Upload CV ⬆
                   <input
@@ -152,7 +167,6 @@ function Home() {
                   />
                 </label>
 
-                {/* DELETE */}
                 {cv && (
                   <button
                     onClick={handleDeleteCV}
@@ -179,8 +193,8 @@ function Home() {
       </h2>
 
       <div className="grid md:grid-cols-2 gap-10">
-        <img src={WrongTurnBanner} alt="WrongTurn Project" />
-        <img src={SeafoodBanner} alt="Seafood Project" />
+        <img src={WrongTurnBanner} alt="WrongTurn Project" className="rounded-lg shadow-lg" />
+        <img src={SeafoodBanner} alt="Seafood Project" className="rounded-lg shadow-lg" />
       </div>
 
       {/* ================= BLOG CTA ================= */}
