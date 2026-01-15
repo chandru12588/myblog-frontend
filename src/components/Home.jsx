@@ -14,7 +14,9 @@ function Home() {
 
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [cvUrl, setCvUrl] = useState(null);
+
+  // CV state
+  const [cv, setCv] = useState(null);
   const [loadingCV, setLoadingCV] = useState(true);
 
   /* ================= AUTH ================= */
@@ -31,13 +33,9 @@ function Home() {
     const loadCV = async () => {
       try {
         const res = await api.get("/api/cv");
-        if (res.data?.url) {
-          setCvUrl(res.data.url);
-        } else {
-          setCvUrl(null);
-        }
+        setCv(res.data); // { viewUrl, downloadUrl } OR null
       } catch {
-        setCvUrl(null);
+        setCv(null);
       } finally {
         setLoadingCV(false);
       }
@@ -62,7 +60,12 @@ function Home() {
         },
       });
 
-      setCvUrl(res.data.cvUrl);
+      // backend returns { viewUrl, downloadUrl }
+      setCv({
+        viewUrl: res.data.viewUrl,
+        downloadUrl: res.data.downloadUrl,
+      });
+
       alert("CV uploaded successfully ✅");
     } catch (err) {
       alert("CV upload failed ❌");
@@ -82,7 +85,7 @@ function Home() {
         },
       });
 
-      setCvUrl(null);
+      setCv(null);
       alert("CV deleted successfully ❌");
     } catch {
       alert("Delete failed ❌");
@@ -114,11 +117,11 @@ function Home() {
               Read My Blogs →
             </button>
 
-            {/* CV ACTIONS */}
-            {!loadingCV && cvUrl && (
+            {/* CV VIEW / DOWNLOAD */}
+            {!loadingCV && cv && (
               <>
                 <a
-                  href={cvUrl}
+                  href={cv.viewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-gray-800 hover:bg-black text-white px-5 py-2 rounded-md shadow-md"
@@ -127,8 +130,7 @@ function Home() {
                 </a>
 
                 <a
-                  href={cvUrl}
-                  download
+                  href={cv.downloadUrl}
                   className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-md shadow-md"
                 >
                   Download CV ⬇
@@ -151,7 +153,7 @@ function Home() {
                 </label>
 
                 {/* DELETE */}
-                {cvUrl && (
+                {cv && (
                   <button
                     onClick={handleDeleteCV}
                     className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-md shadow-md"
