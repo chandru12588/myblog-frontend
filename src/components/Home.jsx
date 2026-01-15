@@ -14,7 +14,8 @@ function Home() {
 
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [cvUrl, setCvUrl] = useState("/Chandru-CV.pdf"); // default
+  const [cvUrl, setCvUrl] = useState(null);
+  const [loadingCV, setLoadingCV] = useState(true);
 
   /* ================= AUTH ================= */
   useEffect(() => {
@@ -25,7 +26,27 @@ function Home() {
     return () => unsub();
   }, []);
 
-  /* ================= UPLOAD / UPDATE CV ================= */
+  /* ================= LOAD CV FROM BACKEND ================= */
+  useEffect(() => {
+    const loadCV = async () => {
+      try {
+        const res = await api.get("/api/cv");
+        if (res.data?.url) {
+          setCvUrl(res.data.url);
+        } else {
+          setCvUrl(null);
+        }
+      } catch {
+        setCvUrl(null);
+      } finally {
+        setLoadingCV(false);
+      }
+    };
+
+    loadCV();
+  }, []);
+
+  /* ================= UPLOAD CV ================= */
   const handleUploadCV = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -42,8 +63,8 @@ function Home() {
       });
 
       setCvUrl(res.data.cvUrl);
-      alert("CV updated successfully ✅");
-    } catch {
+      alert("CV uploaded successfully ✅");
+    } catch (err) {
       alert("CV upload failed ❌");
     }
   };
@@ -61,8 +82,8 @@ function Home() {
         },
       });
 
-      setCvUrl("");
-      alert("CV deleted ❌");
+      setCvUrl(null);
+      alert("CV deleted successfully ❌");
     } catch {
       alert("Delete failed ❌");
     }
@@ -85,7 +106,7 @@ function Home() {
           {/* ================= BUTTONS ================= */}
           <div className="flex flex-wrap gap-3 mt-6">
 
-            {/* VIEW BLOGS */}
+            {/* BLOGS */}
             <button
               onClick={() => navigate("/blogs")}
               className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md shadow-md"
@@ -93,40 +114,39 @@ function Home() {
               Read My Blogs →
             </button>
 
-            {/* VIEW CV */}
-            {cvUrl && (
-              <a
-                href={cvUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-gray-800 hover:bg-black text-white px-5 py-2 rounded-md shadow-md"
-              >
-                View CV 👀
-              </a>
-            )}
+            {/* CV ACTIONS */}
+            {!loadingCV && cvUrl && (
+              <>
+                <a
+                  href={cvUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-800 hover:bg-black text-white px-5 py-2 rounded-md shadow-md"
+                >
+                  View CV 👀
+                </a>
 
-            {/* DOWNLOAD CV */}
-            {cvUrl && (
-              <a
-                href={cvUrl}
-                download
-                className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-md shadow-md"
-              >
-                Download CV ⬇
-              </a>
+                <a
+                  href={cvUrl}
+                  download
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-md shadow-md"
+                >
+                  Download CV ⬇
+                </a>
+              </>
             )}
 
             {/* ================= ADMIN ONLY ================= */}
             {isAdmin && (
               <>
-                {/* UPLOAD / UPDATE */}
+                {/* UPLOAD */}
                 <label className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md shadow-md cursor-pointer">
-                  Update CV ⬆
+                  Upload CV ⬆
                   <input
                     type="file"
                     accept=".pdf"
-                    onChange={handleUploadCV}
                     hidden
+                    onChange={handleUploadCV}
                   />
                 </label>
 
@@ -157,9 +177,8 @@ function Home() {
       </h2>
 
       <div className="grid md:grid-cols-2 gap-10">
-        {/* Project cards (unchanged) */}
-        <img src={WrongTurnBanner} alt="" />
-        <img src={SeafoodBanner} alt="" />
+        <img src={WrongTurnBanner} alt="WrongTurn Project" />
+        <img src={SeafoodBanner} alt="Seafood Project" />
       </div>
 
       {/* ================= BLOG CTA ================= */}
