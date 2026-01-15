@@ -16,7 +16,7 @@ function Home() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   // CV state
-  const [cv, setCv] = useState(null);
+  const [cv, setCv] = useState(null); // { viewUrl, downloadUrl }
   const [loadingCV, setLoadingCV] = useState(true);
 
   /* ================= AUTH ================= */
@@ -28,12 +28,12 @@ function Home() {
     return () => unsub();
   }, []);
 
-  /* ================= LOAD CV FROM BACKEND ================= */
+  /* ================= LOAD CV ================= */
   useEffect(() => {
     const loadCV = async () => {
       try {
         const res = await api.get("/api/cv");
-        setCv(res.data); // { viewUrl, downloadUrl } OR null
+        setCv(res.data); // null OR { viewUrl, downloadUrl }
       } catch {
         setCv(null);
       } finally {
@@ -47,7 +47,7 @@ function Home() {
   /* ================= UPLOAD CV ================= */
   const handleUploadCV = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file || !user) return;
 
     try {
       const token = await user.getIdToken();
@@ -60,14 +60,13 @@ function Home() {
         },
       });
 
-      // backend returns { viewUrl, downloadUrl }
       setCv({
         viewUrl: res.data.viewUrl,
         downloadUrl: res.data.downloadUrl,
       });
 
       alert("CV uploaded successfully ✅");
-    } catch (err) {
+    } catch {
       alert("CV upload failed ❌");
     }
   };
@@ -75,6 +74,7 @@ function Home() {
   /* ================= DELETE CV ================= */
   const handleDeleteCV = async () => {
     if (!window.confirm("Delete CV permanently? 🗑")) return;
+    if (!user) return;
 
     try {
       const token = await user.getIdToken();
@@ -103,10 +103,10 @@ function Home() {
           </h1>
 
           <p className="text-lg text-gray-600 mt-3 leading-relaxed">
-            Travel Vlogger • Fullstack Developer • Freelancer.
+            Travel Vlogger • Full-Stack Developer • Freelancer
           </p>
 
-          {/* ================= BUTTONS ================= */}
+          {/* ================= ACTION BUTTONS ================= */}
           <div className="flex flex-wrap gap-3 mt-6">
 
             {/* BLOGS */}
@@ -146,7 +146,7 @@ function Home() {
                   Upload CV ⬆
                   <input
                     type="file"
-                    accept=".pdf"
+                    accept="application/pdf"
                     hidden
                     onChange={handleUploadCV}
                   />
@@ -168,7 +168,7 @@ function Home() {
 
         <img
           src={HeroImage}
-          alt="Chandru on Bike"
+          alt="Chandru"
           className="w-full max-w-[450px] md:max-w-[550px] drop-shadow-xl rounded-lg mx-auto"
         />
       </section>
