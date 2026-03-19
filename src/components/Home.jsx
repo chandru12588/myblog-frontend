@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../config/firebase";
 import api from "../utils/api";
 
@@ -14,9 +14,7 @@ function Home() {
 
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-
-  // CV state
-  const [cv, setCv] = useState(null); // { viewUrl, downloadUrl }
+  const [cv, setCv] = useState(null);
   const [loadingCV, setLoadingCV] = useState(true);
 
   /* ================= AUTH ================= */
@@ -33,16 +31,13 @@ function Home() {
     const loadCV = async () => {
       try {
         const res = await api.get("/api/cv");
-        // res.data will be { viewUrl, downloadUrl } or null
-        setCv(res.data); 
-      } catch (err) {
-        console.error("Error loading CV:", err);
+        setCv(res.data);
+      } catch {
         setCv(null);
       } finally {
         setLoadingCV(false);
       }
     };
-
     loadCV();
   }, []);
 
@@ -51,9 +46,8 @@ function Home() {
     const file = e.target.files[0];
     if (!file || !user) return;
 
-    // Optional: Basic frontend validation
     if (file.type !== "application/pdf") {
-      alert("Please upload a PDF file only.");
+      alert("Please upload PDF only");
       return;
     }
 
@@ -69,100 +63,84 @@ function Home() {
         },
       });
 
-      // Update state with the new URLs from the fixed backend
-      setCv(res.data); 
-
+      setCv(res.data);
       alert("CV uploaded successfully ✅");
-    } catch (err) {
-      console.error("Upload failed:", err);
-      alert("CV upload failed ❌");
+    } catch {
+      alert("Upload failed ❌");
     }
   };
 
   /* ================= DELETE CV ================= */
   const handleDeleteCV = async () => {
-    if (!window.confirm("Delete CV permanently? 🗑")) return;
+    if (!window.confirm("Delete CV permanently?")) return;
     if (!user) return;
 
     try {
       const token = await user.getIdToken();
-
       await api.delete("/api/cv/delete", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       setCv(null);
-      alert("CV deleted successfully ❌");
-    } catch (err) {
-      console.error("Delete failed:", err);
+      alert("CV deleted ❌");
+    } catch {
       alert("Delete failed ❌");
     }
   };
 
   return (
-    <div className="px-5 md:px-12 select-none">
+    <div className="px-6 md:px-14">
 
       {/* ================= HERO ================= */}
-      <section className="flex flex-col-reverse md:flex-row items-center justify-between py-12">
-        <div className="md:w-1/2 mt-6 md:mt-0">
+      <section className="flex flex-col-reverse md:flex-row items-center justify-between py-14">
+
+        <div className="md:w-1/2 mt-8 md:mt-0">
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
             Hi, I'm <span className="text-orange-500">Chandru</span> 👋
           </h1>
 
-          <p className="text-lg text-gray-600 mt-3 leading-relaxed">
+          <p className="text-lg text-gray-600 mt-4">
             Travel Vlogger • Full-Stack Developer • Freelancer
           </p>
 
-          {/* ================= ACTION BUTTONS ================= */}
-          <div className="flex flex-wrap gap-3 mt-6">
+          <div className="flex flex-wrap gap-4 mt-6">
 
-            {/* BLOGS */}
             <button
               onClick={() => navigate("/blogs")}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md shadow-md"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md shadow-md transition"
             >
               Read My Blogs →
             </button>
 
-            {/* CV VIEW / DOWNLOAD */}
             {!loadingCV && cv && (
               <>
-                {/* VIEW LINK: rel="noopener noreferrer" is important for 
-                   security when opening external Cloudinary links.
-                */}
                 <a
                   href={cv.viewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gray-800 hover:bg-black text-white px-5 py-2 rounded-md shadow-md"
+                  className="bg-gray-800 hover:bg-black text-white px-6 py-2 rounded-md shadow-md"
                 >
                   View CV 👀
                 </a>
 
-                {/* DOWNLOAD LINK: The backend 'fl_attachment' flag does the work,
-                   but the 'download' attribute is a good browser hint.
-                */}
                 <a
                   href={cv.downloadUrl}
                   download="Chandru_CV.pdf"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-md shadow-md"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md shadow-md"
                 >
                   Download CV ⬇
                 </a>
               </>
             )}
 
-            {/* ================= ADMIN ONLY ================= */}
             {isAdmin && (
               <>
-                <label className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md shadow-md cursor-pointer">
+                <label className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md cursor-pointer">
                   Upload CV ⬆
                   <input
                     type="file"
-                    accept="application/pdf"
                     hidden
+                    accept="application/pdf"
                     onChange={handleUploadCV}
                   />
                 </label>
@@ -170,7 +148,7 @@ function Home() {
                 {cv && (
                   <button
                     onClick={handleDeleteCV}
-                    className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-md shadow-md"
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md"
                   >
                     Delete CV 🗑
                   </button>
@@ -183,19 +161,63 @@ function Home() {
         <img
           src={HeroImage}
           alt="Chandru"
-          className="w-full max-w-[450px] md:max-w-[550px] drop-shadow-xl rounded-lg mx-auto"
+          className="w-full max-w-[500px] drop-shadow-2xl rounded-xl"
         />
       </section>
 
-      {/* ================= PROJECTS ================= */}
-      <h2 className="text-3xl md:text-4xl font-bold text-center mt-14 mb-10">
-        My Featured Projects 🚀
-      </h2>
+      {/* ================= FEATURED PROJECTS ================= */}
+      <section className="mt-16">
 
-      <div className="grid md:grid-cols-2 gap-10">
-        <img src={WrongTurnBanner} alt="WrongTurn Project" className="rounded-lg shadow-lg" />
-        <img src={SeafoodBanner} alt="Seafood Project" className="rounded-lg shadow-lg" />
-      </div>
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+          My Featured Projects 🚀
+        </h2>
+
+        <div className="grid md:grid-cols-2 gap-10">
+
+          {/* PROJECT 1 */}
+          <Link
+            to="/projects"
+            className="group relative rounded-2xl overflow-hidden shadow-xl block"
+          >
+            <img
+              src={WrongTurnBanner}
+              alt="WrongTurn"
+              className="w-full h-[300px] object-cover group-hover:scale-105 transition duration-300"
+            />
+
+            <div className="absolute inset-0 bg-black/50 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition">
+              <h3 className="text-white text-xl font-bold">
+                WrongTurn Camping Platform
+              </h3>
+              <p className="text-gray-200 text-sm mt-1">
+                Verified backpack trips & stay booking
+              </p>
+            </div>
+          </Link>
+
+          {/* PROJECT 2 */}
+          <Link
+            to="/projects"
+            className="group relative rounded-2xl overflow-hidden shadow-xl block"
+          >
+            <img
+              src={SeafoodBanner}
+              alt="Seafood"
+              className="w-full h-[300px] object-cover group-hover:scale-105 transition duration-300"
+            />
+
+            <div className="absolute inset-0 bg-black/50 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition">
+              <h3 className="text-white text-xl font-bold">
+                Rameswaram Seafood Delivery
+              </h3>
+              <p className="text-gray-200 text-sm mt-1">
+                Full-stack delivery system
+              </p>
+            </div>
+          </Link>
+
+        </div>
+      </section>
 
       {/* ================= BLOG CTA ================= */}
       <section className="text-center mt-20 mb-20">
@@ -205,11 +227,12 @@ function Home() {
 
         <button
           onClick={() => navigate("/blogs")}
-          className="mt-5 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg shadow-md"
+          className="mt-6 bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg shadow-md"
         >
           Browse Blogs →
         </button>
       </section>
+
     </div>
   );
 }
