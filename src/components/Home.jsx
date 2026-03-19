@@ -181,13 +181,13 @@ function Home() {
           >
             <img
               src={WrongTurnBanner}
-              alt="WrongTurn"
+              alt="Trippolama"
               className="w-full h-[300px] object-cover group-hover:scale-105 transition duration-300"
             />
 
             <div className="absolute inset-0 bg-black/50 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition">
               <h3 className="text-white text-xl font-bold">
-                WrongTurn Camping Platform
+                Trippolama Camping Platform
               </h3>
               <p className="text-gray-200 text-sm mt-1">
                 Verified backpack trips & stay booking
